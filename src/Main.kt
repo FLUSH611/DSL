@@ -16,18 +16,43 @@ fun main() {
             val input = scanner.nextLine()
             when {
                 input == "1" -> {
-                    // Lire le contenu du fichier 'win.txt' à partir du chemin spécifié
+                    // Lire le contenu du fichier 'win.txt'
                     val filename = "C:\\Users\\Dell\\Desktop\\win.txt" // Chemin complet du fichier
                     val file = File(filename)
                     if (file.exists()) {
-                        val content = file.readText()
+                        val content = file.readText().trim()
 
                         // Afficher le contenu d'origine
                         println("Contenu d'origine du fichier :\n$content")
 
-                        // Convertir le contenu en liste
-                        val words = content.trim().split("\\s+".toRegex())
-                        println("Contenu du fichier sous forme de liste : $words")
+                        // Décomposer le contenu en tokens
+                        val tokens = mutableListOf<Token>()
+                        val lines = content.split("\n") // Diviser par lignes
+
+                        // Créer des tokens pour chaque ligne et chaque mot
+                        for ((lineNumber, line) in lines.withIndex()) {
+                            val words = line.split("\\s+".toRegex()) // Diviser par espaces
+                            for (word in words) {
+                                if (word.isNotEmpty()) {
+                                    // Identifier si le mot est un nombre ou un identifiant
+                                    val tokenType = when {
+                                        word.matches(Regex("\\d+")) -> TokenType.NUMBER
+                                        word.startsWith("\"") && word.endsWith("\"") -> TokenType.STRING
+                                        else -> TokenType.IDENTIFIER
+                                    }
+                                    tokens.add(Token(tokenType, word, word, lineNumber + 1)) // Ligne actuelle
+                                }
+                            }
+                        }
+
+                        // Ajouter un token EOF à la fin
+                        tokens.add(Token(TokenType.EOF, "", null, lines.size + 1))
+
+                        // Affichage des tokens
+                        println("Tokens générés :")
+                        for (token in tokens) {
+                            println("TokenType: ${token.tokenType}, Lexeme: '${token.lexeme}', Literal: '${token.literal}', Line: ${token.line}")
+                        }
                     } else {
                         println("Le fichier '$filename' n'existe pas.")
                     }

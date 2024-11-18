@@ -7,8 +7,7 @@ class Lexer(private val source: String) {
         val tokens = mutableListOf<Token>()
 
         while (!isAtEnd()) {
-            val char = advance()
-            when (char) {
+            when (val char = advance()) {
                 '(' -> tokens.add(Token(TokenType.LEFT_PAREN, "(", null, line))
                 ')' -> tokens.add(Token(TokenType.RIGHT_PAREN, ")", null, line))
                 '{' -> tokens.add(Token(TokenType.LEFT_BRACE, "{", null, line))
@@ -38,7 +37,7 @@ class Lexer(private val source: String) {
                 '>' -> tokens.add(Token(TokenType.GREATER, ">", null, line))
                 else -> {
                     if (isAlpha(char)) {
-                        val identifier = readIdentifier(char)
+                        val identifier = readIdentifier()
                         val type = when (identifier) {
                             "fun" -> TokenType.FUN
                             "var" -> TokenType.VAR
@@ -100,7 +99,7 @@ class Lexer(private val source: String) {
         return source.substring(start, current)
     }
 
-    private fun readIdentifier(firstChar: Char): String {
+    private fun readIdentifier(): String {
         val start = current - 1
         while (isAlpha(peek())) advance()
         return source.substring(start, current)

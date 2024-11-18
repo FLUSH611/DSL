@@ -1,7 +1,7 @@
 import java.util.Scanner
 import java.io.File
 
-fun main(args: Array<String>) {
+fun main() {
     val scanner = Scanner(System.`in`)
 
     // Ajouter un gestionnaire d'interruption pour une sortie propre
@@ -9,7 +9,7 @@ fun main(args: Array<String>) {
         println("\nProgramme interrompu par l'utilisateur. Arrêt propre.")
     })
 
-    println("Entrez '1' pour afficher le contenu de 'win.txt', '0' ou 'quit' pour quitter :")
+    println("Entrez '1' pour afficher le contenu de 'win.txt', '0' ou 'quit' pour quitter, ou deux mots séparés par un espace :")
 
     try {
         while (true) {
@@ -21,7 +21,13 @@ fun main(args: Array<String>) {
                     val file = File(filename)
                     if (file.exists()) {
                         val content = file.readText()
-                        println("Contenu du fichier '$filename':\n$content")
+
+                        // Afficher le contenu d'origine
+                        println("Contenu d'origine du fichier :\n$content")
+
+                        // Convertir le contenu en liste
+                        val words = content.trim().split("\\s+".toRegex())
+                        println("Contenu du fichier sous forme de liste : $words")
                     } else {
                         println("Le fichier '$filename' n'existe pas.")
                     }
@@ -37,6 +43,11 @@ fun main(args: Array<String>) {
                 input.toIntOrNull() != null && input.toInt() > 1 -> {
                     // Aide pour les nombres > 1
                     println("Aide: Vous pouvez entrer '1' pour lire le fichier 'win.txt' ou '0'/'quit' pour quitter.")
+                }
+                input.contains(" ") -> {
+                    // Séparer les mots et les afficher sous forme de liste
+                    val words = input.split(" ")
+                    println("Liste des mots : $words")
                 }
                 else -> {
                     println("Commande non reconnue. Veuillez entrer un argument valide.")

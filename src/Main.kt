@@ -26,7 +26,11 @@ fun main(args: Array<String>) {
                         println("Le fichier '$filename' n'existe pas.")
                     }
                 }
-                input == "0" || input.equals("quit", ignoreCase = true) -> {
+                input == "0" -> {
+                    // Indiquer que le programme attend une nouvelle entrée
+                    println("Attente d'une nouvelle entrée utilisateur...")
+                }
+                input.equals("quit", ignoreCase = true) -> {
                     println("Arrêt du programme.")
                     break
                 }

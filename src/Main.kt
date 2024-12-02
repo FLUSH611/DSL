@@ -1,6 +1,6 @@
 import java.io.File
 import java.util.*
-data class Program(val expressions: List<Expression>)
+data class Program(val expressions: List<Expression>) //main
 fun main() {
     val scanner = Scanner(System.`in`)
     println("Entrez '1' pour analyser 'win.txt', '0' pour continuer, ou 'quit' pour quitter :")

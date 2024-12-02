@@ -35,4 +35,4 @@ class State(private val source: String) {
         while (current < source.length && (source[current].isLetter() || source[current].isDigit())) advance()
         return source.substring(start, current)
     }
-}
+}//state

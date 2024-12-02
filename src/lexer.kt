@@ -96,4 +96,4 @@ class Lexer(private var source: String) {
     fun tokenCount(): Int {
         return tokens.size
     }
-}
+}//lexer

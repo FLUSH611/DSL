@@ -1,67 +1,61 @@
-import java.util.Scanner
 import java.io.File
+import java.util.Scanner
 
 fun main() {
     val scanner = Scanner(System.`in`)
-
-    Runtime.getRuntime().addShutdownHook(Thread {
-        println("\nProgramme interrompu par l'utilisateur. Arrêt propre.")
-    })
-
     println("Entrez '1' pour afficher le contenu de 'win.txt', '0' ou 'quit' pour quitter, ou deux mots séparés par un espace :")
 
+    while (true) {
+        val input = scanner.nextLine().trim()
+        if (!handleInput(input)) break
+    }
+}
+
+fun handleInput(input: String): Boolean {
+    return when {
+        input == "1" -> {
+            handleFileInput("C:\\Users\\Dell\\Desktop\\win.txt")
+            true
+        }
+        input == "0" -> {
+            println("Attente d'une nouvelle entrée utilisateur...")
+            true
+        }
+        input.equals("quit", ignoreCase = true) -> {
+            println("Arrêt du programme.")
+            false
+        }
+        input.contains(" ") -> {
+            val words = input.split(" ")
+            println("Liste des mots : $words")
+            true
+        }
+        else -> {
+            println("Commande non reconnue. Veuillez entrer un argument valide.")
+            true
+        }
+    }
+}
+
+fun handleFileInput(filename: String) {
     try {
-        while (true) {
-            val input = scanner.nextLine().trim()
-            when {
-                input == "1" -> {
-                    val filename = "C:\\Users\\Dell\\Desktop\\win.txt"
-                    val file = File(filename)
-                    if (file.exists()) {
-                        val content = file.readText().trim()
-
-                        println("Contenu d'origine du fichier :\n$content")
-
-                        val lexer = Lexer(content)
-                        val tokens = lexer.tokenize()
-
-                        println("Tokens générés :")
-                        for (token in tokens) {
-                            if (token.tokenType != TokenType.COMMENT) {
-                                println("TokenType: ${token.tokenType}, Lexeme: '${token.lexeme}', Line: ${token.line}")
-                            }
-                        }
-
-                        println("Commentaires ignorés :")
-                        for (comment in lexer.getComments()) {
-                            println(comment)
-                        }
-
-                        println("Nombre total de tokens: ${tokens.size}")
-                    } else {
-                        println("Le fichier '$filename' n'existe pas.")
-                    }
-                }
-                input == "0" -> {
-                    println("Attente d'une nouvelle entrée utilisateur...")
-                }
-                input.equals("quit", ignoreCase = true) -> {
-                    println("Arrêt du programme.")
-                    break
-                }
-                input.toIntOrNull() != null && input.toInt() > 1 -> {
-                    println("Aide: Vous pouvez entrer '1' pour lire le fichier 'win.txt' ou '0'/'quit' pour quitter.")
-                }
-                input.contains(" ") -> {
-                    val words = input.split(" ")
-                    println("Liste des mots : $words")
-                }
-                else -> {
-                    println("Commande non reconnue. Veuillez entrer un argument valide.")
-                }
-            }
+        val file = File(filename)
+        if (file.exists()) {
+            val content = file.readText().trim()
+            processSource(content)
+        } else {
+            println("Erreur : Le fichier '$filename' n'existe pas.")
         }
     } catch (e: Exception) {
-        println("Le programme a été interrompu : ${e.message}")
+        println("Erreur lors de la lecture du fichier : ${e.message}")
     }
+}
+
+fun processSource(source: String) {
+    val lexer = Lexer(source)
+    lexer.tokenize()
+
+    println("Tokens générés :")
+    lexer.tokens.forEach { println(it) }
+    println("Nombre de tokens : ${lexer.tokenCount()}")
 }

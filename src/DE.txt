@@ -3,7 +3,7 @@ si args = 0 -> on attend l'import utilisateur, on l'affiche, on recommence
 si args = 1 -> on lit le fichier pour un argument et on affiche le contenu 
 si args > 1 -> on affichera une aide*/
 
-var x = fun(x, y) >
+ x = fun(x, y) >
 {hey}
 //Token//
 /* laylay */

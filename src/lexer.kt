@@ -1,116 +1,103 @@
 class Lexer(private val source: String) {
+    val tokens = mutableListOf<Token>()
     private var current = 0
     private var line = 1
-    private val comments = mutableListOf<String>()
 
-    fun tokenize(): List<Token> {
-        val tokens = mutableListOf<Token>()
-
+    fun tokenize() {
         while (!isAtEnd()) {
-            when (val char = advance()) {
-                '(' -> tokens.add(Token(TokenType.LEFT_PAREN, "(", null, line))
-                ')' -> tokens.add(Token(TokenType.RIGHT_PAREN, ")", null, line))
-                '{' -> tokens.add(Token(TokenType.LEFT_BRACE, "{", null, line))
-                '}' -> tokens.add(Token(TokenType.RIGHT_BRACE, "}", null, line))
-                ',' -> tokens.add(Token(TokenType.COMMA, ",", null, line))
-                '.' -> tokens.add(Token(TokenType.DOT, ".", null, line))
-                '-' -> tokens.add(Token(TokenType.MINUS, "-", null, line))
-                '+' -> tokens.add(Token(TokenType.PLUS, "+", null, line))
-                ';' -> tokens.add(Token(TokenType.SEMICOLON, ";", null, line))
-                '/' -> {
-                    if (peek() == '/') {
-                        val comment = handleSingleLineComment()
-                        comments.add(comment)
-                    } else if (peek() == '*') {
-                        val comment = handleMultiLineComment()
-                        comments.add(comment)
-                    } else {
-                        tokens.add(Token(TokenType.SLASH, "/", null, line))
-                    }
+            val char = advance()
+            when {
+                char.isWhitespace() -> {
+                    if (char == '\n') line++
+                    continue // Ignore whitespace
                 }
-                '*' -> tokens.add(Token(TokenType.STAR, "*", null, line))
-                '=' -> tokens.add(Token(TokenType.EQUAL, "=", null, line))
-                ' ' -> {} // Ignorer les espaces
-                '\n' -> line++
-                '"' -> tokens.add(Token(TokenType.STRING, readString(), null, line))
-                in '0'..'9' -> tokens.add(Token(TokenType.NUMBER, readNumber(), null, line))
-                '>' -> tokens.add(Token(TokenType.GREATER, ">", null, line))
+                char.isDigit() -> addToken(TokenType.NUMBER, readNumber())
+                char.isLetter() -> addToken(TokenType.IDENTIFIER, readIdentifier())
+                char == '"' -> addToken(TokenType.STRING, readString())
+                char == '/' -> handleSlash()
+                char == '=' -> addToken(TokenType.EQUAL, "=") // Utilisation correcte
+                char == '(' -> addToken(TokenType.LEFT_PAREN, "(")
+                char == ')' -> addToken(TokenType.RIGHT_PAREN, ")")
+                char == '{' -> addToken(TokenType.LEFT_BRACE, "{")
+                char == '}' -> addToken(TokenType.RIGHT_BRACE, "}")
+                char == ',' -> addToken(TokenType.COMMA, ",")
+                char == '>' -> addToken(TokenType.GREATER_THAN, ">")
+                char == '+' -> addToken(TokenType.PLUS, "+")
+                char == '*' -> addToken(TokenType.STAR, "*")
                 else -> {
-                    if (isAlpha(char)) {
-                        val identifier = readIdentifier()
-                        val type = when (identifier) {
-                            "fun" -> TokenType.FUN
-                            "var" -> TokenType.VAR
-                            else -> TokenType.IDENTIFIER
-                        }
-                        tokens.add(Token(type, identifier, null, line))
-                    } else {
-                        println("Erreur à la ligne $line : caractère inattendu '$char'")
-                    }
+                    // Skip unrecognized characters
+                    println("Warning: Unrecognized character '${char}' at line $line. Skipping.")
                 }
             }
         }
-        tokens.add(Token(TokenType.EOF, "", null, line))
-        return tokens
+        tokens.add(Token(TokenType.EOF, "", null, line)) // Add EOF token
     }
 
-    private fun handleSingleLineComment(): String {
-        val comment = StringBuilder()
-        while (!isAtEnd() && peek() != '\n') {
-            comment.append(advance())
-        }
-        return "// ${comment.toString().trim()}"
+    private fun advance(): Char {
+        return if (!isAtEnd()) source[current++] else '\u0000'
     }
-
-    private fun handleMultiLineComment(): String {
-        advance() // Consomme le '*'
-        val comment = StringBuilder()
-        while (!isAtEnd()) {
-            if (peek() == '*' && peekNext() == '/') {
-                advance() // Consomme le '*'
-                advance() // Consomme le '/'
-                return "/* ${comment.toString().trim()} */"
-            }
-            if (peek() == '\n') line++
-            comment.append(advance())
-        }
-        println("Erreur à la ligne $line : commentaire multi-ligne non fermé")
-        return "/* commentaire multi-ligne non fermé */"
-    }
-
-    fun getComments(): List<String> = comments
 
     private fun isAtEnd() = current >= source.length
-    private fun advance() = source[current++]
 
-    private fun readString(): String {
-        val start = current
-        while (peek() != '"' && !isAtEnd()) {
-            if (peek() == '\n') line++
-            advance()
-        }
-        if (!isAtEnd()) advance() // Consommer le guillemet fermant
-        return source.substring(start, current)
+    private fun addToken(type: TokenType, lexeme: String) {
+        val token = Token(type, lexeme, null, line)
+        tokens.add(token)
     }
 
     private fun readNumber(): String {
         val start = current - 1
-        while (isDigit(peek())) advance()
+        while (current < source.length && source[current].isDigit()) advance()
         return source.substring(start, current)
+    }
+
+    private fun readString(): String {
+        val start = current
+        while (!isAtEnd() && peekChar() != '"') {
+            if (peekChar() == '\n') line++
+            advance()
+        }
+        advance() // Consomme le guillemet de fermeture
+        return source.substring(start, current - 1)
     }
 
     private fun readIdentifier(): String {
         val start = current - 1
-        while (isAlpha(peek())) advance()
+        while (current < source.length && (source[current].isLetter() || source[current].isDigit())) advance()
         return source.substring(start, current)
     }
 
-    private fun peek() = if (isAtEnd()) '\u0000' else source[current]
+    private fun peekChar(): Char {
+        return if (isAtEnd()) '\u0000' else source[current]
+    }
 
-    private fun peekNext(): Char {
+    private fun handleSlash() {
+        if (peekChar() == '/') { // Commentaire sur une seule ligne
+            advance() // Consomme le premier slash
+            advance() //  le second slash
+            while (!isAtEnd() && peekChar() != '\n') {
+                advance() // Ignore le contenu du commentaire
+            }
+        } else if (peekChar() == '*') { // Commentaire multi-ligne
+            advance() // Consomme le premier slash
+            advance() // Consomme l'astérisque
+            while (!isAtEnd()) {
+                if (peekChar() == '*' && peekNextChar() == '/') {
+                    advance() // Consomme l'astérisque
+                    advance() // Consomme le slash
+                    break // Fin du commentaire multi-ligne
+                }
+                if (peekChar() == '\n') line++ // Compte les nouvelles lignes
+                advance() // Ignore le contenu du commentaire
+            }
+        } else {
+            addToken(TokenType.SLASH, "/") // Si ce n'est pas un commentaire
+        }
+    }
+    private fun peekNextChar(): Char {
         return if (current + 1 >= source.length) '\u0000' else source[current + 1]
     }
 
-    private fun isAlpha(c: Char) = c.isLetter() || c == '_'
-    private fun isDigit(c: Char) = c.isDigit()
+    fun tokenCount(): Int {
+        return tokens.size
+    }
 }

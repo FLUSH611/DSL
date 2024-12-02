@@ -1,4 +1,4 @@
-class Lexer(private val source: String) {
+class Lexer(private var source: String) {
     val tokens = mutableListOf<Token>()
     private var current = 0
     private var line = 1
@@ -7,30 +7,30 @@ class Lexer(private val source: String) {
         while (!isAtEnd()) {
             val char = advance()
             when {
-                char.isWhitespace() -> {
-                    if (char == '\n') line++
-                    continue // Ignore whitespace
-                }
+                char.isWhitespace() -> if (char == '\n') line++
                 char.isDigit() -> addToken(TokenType.NUMBER, readNumber())
-                char.isLetter() -> addToken(TokenType.IDENTIFIER, readIdentifier())
+                char.isLetter() -> addToken(readIdentifier())
                 char == '"' -> addToken(TokenType.STRING, readString())
-                char == '/' -> handleSlash()
-                char == '=' -> addToken(TokenType.EQUAL, "=") // Utilisation correcte
                 char == '(' -> addToken(TokenType.LEFT_PAREN, "(")
                 char == ')' -> addToken(TokenType.RIGHT_PAREN, ")")
-                char == '{' -> addToken(TokenType.LEFT_BRACE, "{")
-                char == '}' -> addToken(TokenType.RIGHT_BRACE, "}")
-                char == ',' -> addToken(TokenType.COMMA, ",")
-                char == '>' -> addToken(TokenType.GREATER_THAN, ">")
                 char == '+' -> addToken(TokenType.PLUS, "+")
+                char == '-' -> addToken(TokenType.MINUS, "-")
                 char == '*' -> addToken(TokenType.STAR, "*")
-                else -> {
-                    // Skip unrecognized characters
-                    println("Warning: Unrecognized character '${char}' at line $line. Skipping.")
+                char == '/' -> addToken(TokenType.SLASH, "/")
+                char == '&' -> if (match('&')) addToken(TokenType.AND, "&&")
+                char == '|' -> if (match('|')) addToken(TokenType.OR, "||")
+                char == '>' -> {
+                    if (match('=')) addToken(TokenType.GREATER_EQUAL, ">=")
+                    else addToken(TokenType.GREATER, ">")
                 }
+                char == '<' -> {
+                    if (match('=')) addToken(TokenType.LESS_EQUAL, "<=")
+                    else addToken(TokenType.LESS, "<")
+                }
+                else -> println("Warning: Unrecognized character '$char' at line $line. Skipping.")
             }
         }
-        tokens.add(Token(TokenType.EOF, "", null, line)) // Add EOF token
+        tokens.add(Token(TokenType.EOF, "", null, line))
     }
 
     private fun advance(): Char {
@@ -42,6 +42,10 @@ class Lexer(private val source: String) {
     private fun addToken(type: TokenType, lexeme: String) {
         val token = Token(type, lexeme, null, line)
         tokens.add(token)
+    }
+
+    private fun addToken(type: TokenType) {
+        addToken(type, "")
     }
 
     private fun readNumber(): String {
@@ -56,45 +60,37 @@ class Lexer(private val source: String) {
             if (peekChar() == '\n') line++
             advance()
         }
-        advance() // Consomme le guillemet de fermeture
+        advance() // Consommer la quote fermante
         return source.substring(start, current - 1)
     }
 
-    private fun readIdentifier(): String {
+    private fun readIdentifier(): TokenType {
         val start = current - 1
-        while (current < source.length && (source[current].isLetter() || source[current].isDigit())) advance()
-        return source.substring(start, current)
+        while (current < source.length && (source[current].isLetterOrDigit() || source[current] == '_')) {
+            advance()
+        }
+        val identifier = source.substring(start, current)
+        return isKeyword(identifier) ?: TokenType.IDENTIFIER
+    }
+
+    private fun isKeyword(lexeme: String): TokenType? {
+        return when (lexeme) {
+            "true" -> TokenType.TRUE
+            "false" -> TokenType.FALSE
+            "null" -> TokenType.NULL
+            else -> null
+        }
+    }
+
+    private fun match(expected: Char): Boolean {
+        if (isAtEnd()) return false
+        if (source[current] != expected) return false
+        current++
+        return true
     }
 
     private fun peekChar(): Char {
         return if (isAtEnd()) '\u0000' else source[current]
-    }
-
-    private fun handleSlash() {
-        if (peekChar() == '/') { // Commentaire sur une seule ligne
-            advance() // Consomme le premier slash
-            advance() //  le second slash
-            while (!isAtEnd() && peekChar() != '\n') {
-                advance() // Ignore le contenu du commentaire
-            }
-        } else if (peekChar() == '*') { // Commentaire multi-ligne
-            advance() // Consomme le premier slash
-            advance() // Consomme l'astérisque
-            while (!isAtEnd()) {
-                if (peekChar() == '*' && peekNextChar() == '/') {
-                    advance() // Consomme l'astérisque
-                    advance() // Consomme le slash
-                    break // Fin du commentaire multi-ligne
-                }
-                if (peekChar() == '\n') line++ // Compte les nouvelles lignes
-                advance() // Ignore le contenu du commentaire
-            }
-        } else {
-            addToken(TokenType.SLASH, "/") // Si ce n'est pas un commentaire
-        }
-    }
-    private fun peekNextChar(): Char {
-        return if (current + 1 >= source.length) '\u0000' else source[current + 1]
     }
 
     fun tokenCount(): Int {

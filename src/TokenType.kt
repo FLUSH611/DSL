@@ -1,30 +1,23 @@
 enum class TokenType {
-    LEFT_PAREN, RIGHT_PAREN, LEFT_BRACE, RIGHT_BRACE,
-    COMMA, DOT, MINUS, PLUS, SEMICOLON, SLASH, STAR,
-    BANG, BANG_EQUAL, EQUAL, EQUAL_EQUAL, GREATER,
-    GREATER_EQUAL, LESS, LESS_EQUAL,
-    IDENTIFIER, STRING, NUMBER, COMMENT,
-    AND, CLASS, ELSE, FALSE, FUN, IF, NIL, OR,
-    PRINT, RETURN, SUPER, THIS, TRUE, EOF, GREATER_THAN;
-
-    companion object {
-        fun fromIdentifier(identifier: String): TokenType {
-            return when (identifier) {
-                "and" -> AND
-                "class" -> CLASS
-                "else" -> ELSE
-                "false" -> FALSE
-                "fun" -> FUN
-                "if" -> IF
-                "nil" -> NIL
-                "or" -> OR
-                "print" -> PRINT
-                "return" -> RETURN
-                "super" -> SUPER
-                "this" -> THIS
-                "true" -> TRUE
-                else -> IDENTIFIER
-            }
-        }
-    }
+    NUMBER,        // Pour les nombres comme 3, 10
+    STRING,        // Pour les chaînes comme "Hello, world!"
+    TRUE,          // Pour la valeur booléenne true
+    FALSE,         // Pour la valeur booléenne false
+    NULL,          // Pour la valeur null
+    IDENTIFIER,    // Pour les identifiants comme a, b
+    PLUS,          // Pour l'opérateur +
+    MINUS,         // Pour l'opérateur -
+    STAR,          // Pour l'opérateur *
+    SLASH,         // Pour l'opérateur /
+    AND,           // Pour l'opérateur logique &&
+    OR,            // Pour l'opérateur logique ||
+    GREATER,       // Pour l'opérateur >
+    GREATER_EQUAL, // Pour l'opérateur >=
+    LESS,          // Pour l'opérateur <
+    LESS_EQUAL,    // Pour l'opérateur <=
+    EQUAL,         // Pour l'opérateur ==
+    NOT_EQUAL,     // Pour l'opérateur !=
+    LEFT_PAREN,    // Pour (
+    RIGHT_PAREN,   // Pour )
+    EOF            // Fin de fichier
 }

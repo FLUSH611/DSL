@@ -1,30 +1,36 @@
 enum class TokenType {
-    LEFT_PAREN, RIGHT_PAREN, LEFT_BRACE, RIGHT_BRACE,
-    COMMA, DOT, MINUS, PLUS, SEMICOLON, SLASH, STAR,
-    BANG, BANG_EQUAL, EQUAL, EQUAL_EQUAL, GREATER,
-    GREATER_EQUAL, LESS, LESS_EQUAL,
-    IDENTIFIER, STRING, NUMBER, COMMENT,
-    AND, CLASS, ELSE, FALSE, FUN, IF, NIL, OR,
-    PRINT, RETURN, SUPER, THIS, TRUE, EOF, GREATER_THAN;
+    // Types de tokens pour les valeurs
+    NUMBER,
+    STRING,
+    TRUE,
+    FALSE,
+    NULL,
 
-    companion object {
-        fun fromIdentifier(identifier: String): TokenType {
-            return when (identifier) {
-                "and" -> AND
-                "class" -> CLASS
-                "else" -> ELSE
-                "false" -> FALSE
-                "fun" -> FUN
-                "if" -> IF
-                "nil" -> NIL
-                "or" -> OR
-                "print" -> PRINT
-                "return" -> RETURN
-                "super" -> SUPER
-                "this" -> THIS
-                "true" -> TRUE
-                else -> IDENTIFIER
-            }
-        }
-    }
+    // Types de tokens pour les identifiants
+    IDENTIFIER,
+
+    // Types de tokens pour les opérateurs arithmétiques
+    PLUS,
+    MINUS,
+    STAR,
+    SLASH,
+
+    // Types de tokens pour les opérateurs logiques
+    AND,
+    OR,
+
+    // Types de tokens pour les opérateurs de comparaison
+    GREATER,
+    GREATER_EQUAL,
+    LESS,
+    LESS_EQUAL,
+    EQUAL,
+    NOT_EQUAL,
+
+    // Types de tokens pour les parenthèses
+    LEFT_PAREN,
+    RIGHT_PAREN,
+
+    // Token de fin de fichier
+    EOF
 }
